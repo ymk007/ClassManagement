@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.3.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+	<!-- 扫描器 -->	
+	<context:component-scan base-package="com.hx.dao,com.hx.controller,com.hx.service.impl,com.hx.util"></context:component-scan>
+	
+	<!-- 导入SQL配置文件 -->
+	<context:property-placeholder location="classpath:db.properties"/>
+	<!-- 数据库连接 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${driver}"></property>
+		<property name="jdbcUrl" value="${url}"></property>
+		<property name="user" value="${user}"></property>
+		<property name="password" value="${pwd}"></property>
+		<property name="minPoolSize" value="5"></property>
+		<property name="maxPoolSize" value="30"></property>
+		<property name="maxIdleTime" value="60"></property>
+	</bean>
+	<!-- 整合mybatis -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+		<!-- 自动扫描mapping.xml文件-->
+       	<property name="mapperLocations" value="classpath:com/hx/mapper/*.xml" />
+       	<!-- 配置别名 -->
+       	<property name="typeAliasesPackage" value="com.hx.pojo"></property>
+	</bean>
+	<!-- 为接口生成代理对象 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.hx.dao"/>
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+	</bean>
+	
+	<!-- 配置事务管理器   指定数据源 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	<!--  使用注解形式的 声明式 事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	
+	<!-- 配置MVC -->
+	<!-- 注册bean -->
+    <mvc:default-servlet-handler/>
+    <!-- 加载静态资源 -->
+    <mvc:annotation-driven></mvc:annotation-driven>
+    
+    <!--  视图解析器     -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/"></property>
+		<!-- <property name="suffix" value=".jsp"></property> -->
+	</bean>
+	
+	
+</beans>
